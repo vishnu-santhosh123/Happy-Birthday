@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Hyderabad Days</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;700&display=swap');
+
+  :root{
+    --board: #C9A876;
+    --board-dark: #B8946A;
+    --paper: #FFFDF8;
+    --tape: rgba(255,255,255,0.55);
+    --ink: #4A3B2A;
+    --accent: #D65D5D;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    font-family:'Nunito', sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,0.10), transparent 40%),
+      radial-gradient(circle at 80% 85%, rgba(0,0,0,0.06), transparent 45%),
+      var(--board);
+    background-attachment: fixed;
+    overflow-x:hidden;
+  }
+
+  .stage{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 18px;
+  }
+
+  .scene{ display:none; width:100%; max-width: 460px; }
+  .scene.active{ display:block; animation: settle .5s ease both; }
+  @keyframes settle{
+    from{ opacity:0; transform: translateY(14px) rotate(0deg); }
+    to{ opacity:1; transform: translateY(0) rotate(var(--tilt,0deg)); }
+  }
+
+  .card{
+    position:relative;
+    background: var(--paper);
+    border-radius: 4px;
+    padding: 22px 20px 26px;
+    box-shadow: 0 14px 30px rgba(0,0,0,0.28), 0 2px 0 rgba(0,0,0,0.05);
+    transform: rotate(var(--tilt, -1.5deg));
+  }
+
+  .pin{
+    position:absolute;
+    top: -14px; left: 50%;
+    transform: translateX(-50%);
+    width: 22px; height: 40px;
+  }
+  .pin::before{
+    content:''; position:absolute; left:50%; top:14px;
+    width:2px; height:22px; background:#8a8a8a;
+    transform: translateX(-50%);
+  }
+  .pin::after{
+    content:''; position:absolute; left:50%; top:0;
+    width:16px; height:16px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #ff8b8b, var(--accent));
+    transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .scene-label{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size: 1.05rem;
+    color: var(--accent);
+    margin: 0 0 6px;
+    text-align:center;
+  }
+
+  .avatars-row{
+    display:flex;
+    justify-content:center;
+    gap: 22px;
+    margin: 6px 0 14px;
+    flex-wrap: wrap;
+  }
+
+  .avatar{
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    display:flex; align-items:center; justify-content:center;
+    background: #FBEEDD;
+    border: 3px solid var(--paper);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    flex-shrink:0;
+  }
+  .avatar svg{ width:100%; height:100%; display:block; }
+  .avatar-mini{
+    width: 40px; height:40px;
+  }
+  .avatar-name{
+    text-align:center;
+    font-size: 0.72rem;
+    color: #7A6A55;
+    margin-top:4px;
+    font-weight:700;
+  }
+  .avatar-block{ text-align:center; }
+
+  .bubble{
+    background: #FBF3E4;
+    border: 1px solid #EAD9BC;
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 0.96rem;
+    line-height:1.45;
+    margin: 8px 0;
+    position:relative;
+    max-width: 100%;
+  }
+  .bubble.left{ border-bottom-left-radius:3px; margin-right:30px; }
+  .bubble.right{
+    border-bottom-right-radius:3px;
+    margin-left:30px;
+    background:#FFEFEF;
+    border-color:#F3D3D3;
+    text-align:right;
+  }
+  .bubble b{ color: var(--accent); font-family:'Caveat', cursive; font-size:1.05rem; font-weight:700; }
+
+  .caption{
+    font-family:'Caveat', cursive;
+    font-size: 1.2rem;
+    text-align:center;
+    color: #6B5A42;
+    margin-top: 14px;
+    border-top: 1px dashed #E3D4B8;
+    padding-top: 10px;
+  }
+
+  .nav{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    margin-top: 26px;
+  }
+
+  .btn{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size: 1.15rem;
+    border:none;
+    cursor:pointer;
+    padding: 10px 26px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 4px 0 #A83E3E;
+  }
+  .btn:active{ transform: translateY(3px); box-shadow: 0 1px 0 #A83E3E; }
+  .btn.ghost{
+    background: transparent;
+    color: var(--ink);
+    box-shadow:none;
+    text-decoration: underline;
+    padding: 10px 8px;
+  }
+
+  .dots{ display:flex; gap:7px; justify-content:center; margin-top:18px; }
+  .dot{ width:7px; height:7px; border-radius:50%; background: rgba(74,59,42,0.25); }
+  .dot.active{ background: var(--accent); }
+
+  h1.title{
+    font-family:'Caveat', cursive;
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+    text-align:center;
+    color: #FFFDF8;
+    text-shadow: 0 3px 10px rgba(0,0,0,0.35);
+    margin: 0 0 6px;
+  }
+  p.subtitle{
+    text-align:center;
+    color: #FFF3E0;
+    font-size: 1rem;
+    margin: 0 0 26px;
+    opacity: 0.9;
+  }
+
+  .grid-final{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 10px;
+    margin: 10px 0 16px;
+  }
+  .grid-final .avatar-block .avatar{ margin: 0 auto; }
+
+  .dance-row{
+    display:flex;
+    justify-content:center;
+    align-items:flex-end;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin: 10px 0 6px;
+  }
+  .dance-row .avatar-block{ display:flex; align-items:center; }
+  .hand-link{
+    font-size: 1.1rem;
+    padding: 0 2px 18px;
+    opacity: 0.8;
+    animation: linkSway 1s ease-in-out infinite;
+  }
+  @keyframes linkSway{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(3px); }
+  }
+  .dance-row .avatar{ animation: dance 1s ease-in-out infinite; }
+  .dance-row .avatar-block:nth-child(odd) .avatar{ animation-delay: 0s; }
+  .dance-row .avatar-block:nth-child(even) .avatar{ animation-delay: .25s; }
+  @keyframes dance{
+    0%,100%{ transform: translateY(0) rotate(-6deg); }
+    50%{ transform: translateY(-9px) rotate(6deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <!-- INTRO -->
+  <section class="scene active" id="scene-0">
+    <h1 class="title">The Hyderabad Days</h1>
+    <p class="subtitle">A little walk back through the colo, one memory at a time.</p>
+    <div class="card" style="--tilt:-1deg;">
+      <div class="pin"></div>
+      <div class="scene-label">nine desks, one WiFi that always lagged</div>
+      <div class="avatars-row" id="introAvatars"></div>
+      <div class="caption">tap through for the memories 👇</div>
+      <div class="nav"><button class="btn" onclick="goTo(1)">Start</button></div>
+    </div>
+  </section>
+
+  <!-- SCENE 1 -->
+  <section class="scene" id="scene-1">
+    <div class="card" style="--tilt:1.5deg;">
+      <div class="pin"></div>
+      <div class="scene-label">the bug that took all night</div>
+      <div class="avatars-row" id="s1-avatars"></div>
+      <div class="bubble left"><b>Nishant:</b> it's the semicolon, I swear it's the semicolon</div>
+      <div class="bubble right"><b>Nikhil:</b> it was not the semicolon</div>
+      <div class="caption">3am, two monitors, one very tired vending machine</div>
+      <div class="nav"><button class="btn" onclick="goTo(2)">Next</button></div>
+    </div>
+  </section>
+
+  <!-- SCENE 2 -->
+  <section class="scene" id="scene-2">
+    <div class="card" style="--tilt:-2deg;">
+      <div class="pin"></div>
+      <div class="scene-label">the unofficial coffee committee</div>
+      <div class="avatars-row" id="s2-avatars"></div>
+      <div class="bubble left"><b>Kamal:</b> one more cup and I'm unstoppable</div>
+      <div class="bubble right"><b>Vishnu:</b> that's what you said at 10am</div>
+      <div class="caption">the real standup happened at the coffee machine</div>
+      <div class="nav"><button class="btn" onclick="goTo(3)">Next</button></div>
+    </div>
+  </section>
+
+  <!-- SCENE 3 -->
+  <section class="scene" id="scene-3">
+    <div class="card" style="--tilt:2deg;">
+      <div class="pin"></div>
+      <div class="scene-label">the deploy that shouldn't have worked</div>
+      <div class="avatars-row" id="s3-avatars"></div>
+      <div class="bubble left"><b>Guhan:</b> okay it's live, nobody touch anything</div>
+      <div class="bubble right"><b>Meshwin:</b> why is it still working</div>
+      <div class="caption">it stayed up for a year. nobody knows why.</div>
+      <div class="nav"><button class="btn" onclick="goTo(4)">Next</button></div>
+    </div>
+  </section>
+
+  <!-- SCENE 4 -->
+  <section class="scene" id="scene-4">
+    <div class="card" style="--tilt:-1.5deg;">
+      <div class="pin"></div>
+      <div class="scene-label">lunch table politics</div>
+      <div class="avatars-row" id="s4-avatars"></div>
+      <div class="bubble left"><b>Shivansh:</b> biryani again? we had biryani yesterday</div>
+      <div class="bubble right"><b>Mounika:</b> biryani is not a "again", it's a lifestyle</div>
+      <div class="caption">the canteen never won an argument against her</div>
+      <div class="nav"><button class="btn" onclick="goTo(5)">Next</button></div>
+    </div>
+  </section>
+
+  <!-- SCENE 5 -->
+  <section class="scene" id="scene-5">
+    <div class="card" style="--tilt:1.5deg;">
+      <div class="pin"></div>
+      <div class="scene-label">the weekend plan that changed four times</div>
+      <div class="avatars-row" id="s5-avatars"></div>
+      <div class="bubble left"><b>Thanusree:</b> okay but hear me out, what if we just don't leave the city</div>
+      <div class="bubble right"><b>Everyone:</b> ...fine, but you're booking it</div>
+      <div class="caption">somehow, it always worked out</div>
+      <div class="nav"><button class="btn" onclick="goTo(6)">One more thing</button></div>
+    </div>
+  </section>
+
+  <!-- SCENE 6: CELEBRATION -->
+  <section class="scene" id="scene-6">
+    <div class="card" style="--tilt:1deg;">
+      <div class="pin"></div>
+      <div class="scene-label">the day we just... celebrated</div>
+      <div class="dance-row" id="danceAvatars"></div>
+      <div class="bubble left"><b>Mounika:</b> okay everybody, circle up, hands in!</div>
+      <div class="bubble right"><b>Vishnu:</b> I have zero rhythm and I do not care</div>
+      <div class="bubble left"><b>Thanusree:</b> someone's definitely filming this</div>
+      <div class="caption">hands linked, feet nowhere near in sync, best night anyway 🎶</div>
+      <div class="nav"><button class="btn" onclick="goTo(7)">One more thing</button></div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section class="scene" id="scene-7">
+    <div class="card" style="--tilt:-1deg;">
+      <div class="pin"></div>
+      <div class="scene-label">the whole crew</div>
+      <div class="grid-final" id="finalGrid"></div>
+      <div class="caption" style="font-size:1.4rem; margin-top:4px;">
+        Nine desks, a hundred deadlines, and somehow<br>the best part of the whole job. 💛
+      </div>
+      <div class="nav">
+        <button class="btn ghost" onclick="goTo(0)">↺ watch again</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+  // shared face features (skin base + eyebrows + eyes + mouth)
+  function faceCore(skin){
+    return `
+      <circle cx="50" cy="58" r="27" fill="${skin}" stroke="#2b2b2b" stroke-width="2"/>
+      <path d="M33 44 Q40 40 47 44" stroke="#2b2b2b" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M53 44 Q60 40 67 44" stroke="#2b2b2b" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="40" cy="56" rx="6" ry="8" fill="white" stroke="#2b2b2b" stroke-width="1.5"/>
+      <circle cx="40" cy="58" r="3.2" fill="#3a2a1a"/>
+      <circle cx="41.5" cy="55.5" r="1" fill="white"/>
+      <ellipse cx="60" cy="56" rx="6" ry="8" fill="white" stroke="#2b2b2b" stroke-width="1.5"/>
+      <circle cx="60" cy="58" r="3.2" fill="#3a2a1a"/>
+      <circle cx="61.5" cy="55.5" r="1" fill="white"/>
+      <path d="M42 70 Q50 76 58 70" stroke="#2b2b2b" stroke-width="2" fill="none" stroke-linecap="round"/>
+    `;
+  }
+
+  const people = [
+    { name:"Nishant", skin:"#E8B08A",
+      back:  `<path d="M23 55 Q23 88 50 90 Q77 88 77 55 Q77 30 50 28 Q23 30 23 55 Z" fill="#1f1f1f"/>`,
+      front: `<path d="M28 34 L33 17 L38 33 Z" fill="#1f1f1f"/><path d="M40 30 L45 13 L50 30 Z" fill="#1f1f1f"/><path d="M50 30 L55 12 L60 30 Z" fill="#1f1f1f"/><path d="M60 32 L67 16 L70 33 Z" fill="#1f1f1f"/>`
+    },
+    { name:"Nikhil", skin:"#F2C9A0",
+      back:  `<path d="M24 45 Q22 27 50 25 Q78 27 76 45 Q76 33 50 30 Q24 33 24 45 Z" fill="#3b2a1a"/>`,
+      front: `<path d="M46 22 L40 34" stroke="#241a10" stroke-width="1.5"/><circle cx="40" cy="56" r="9" fill="none" stroke="#2b2b2b" stroke-width="2"/><circle cx="60" cy="56" r="9" fill="none" stroke="#2b2b2b" stroke-width="2"/><line x1="49" y1="56" x2="51" y2="56" stroke="#2b2b2b" stroke-width="2"/>`
+    },
+    { name:"Kamal", skin:"#C88B5A",
+      back:  `<g fill="#2e1f13"><circle cx="30" cy="35" r="8"/><circle cx="40" cy="25" r="9"/><circle cx="50" cy="21" r="9"/><circle cx="60" cy="25" r="9"/><circle cx="70" cy="35" r="8"/><circle cx="26" cy="48" r="7"/><circle cx="74" cy="48" r="7"/></g>`,
+      front: `<path d="M43 67 Q50 71 57 67" stroke="#2e1f13" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    },
+    { name:"Vishnu", skin:"#F2C9A0",
+      back:  `<path d="M25 45 Q25 21 50 19 Q75 21 75 45 Q75 34 50 29 Q25 34 25 45 Z" fill="#14110f"/>`,
+      front: `<path d="M25 48 Q50 6 75 48" stroke="#333" stroke-width="4" fill="none"/><circle cx="23" cy="55" r="8" fill="#333"/><circle cx="77" cy="55" r="8" fill="#333"/>`
+    },
+    { name:"Guhan", skin:"#E8B08A",
+      back:  `<path d="M23 50 Q20 39 28 37 Q26 46 30 50 Z" fill="#1f1f1f"/><path d="M77 50 Q80 39 72 37 Q74 46 70 50 Z" fill="#1f1f1f"/>`,
+      front: `<ellipse cx="50" cy="26" rx="27" ry="15" fill="#3a6ea5"/><rect x="60" y="18" width="20" height="8" rx="3" fill="#2c567e"/>`
+    },
+    { name:"Meshwin", skin:"#C88B5A",
+      back:  `<path d="M22 50 Q19 20 50 17 Q81 20 78 50 Q78 34 65 29 Q55 13 45 29 Q35 21 30 34 Q24 40 22 50 Z" fill="#4a3221"/>`,
+      front: `<circle cx="74" cy="66" r="2.5" fill="#d4af37"/>`
+    },
+    { name:"Shivansh", skin:"#E8B08A",
+      back:  `<circle cx="50" cy="18" r="8" fill="#20160c"/><path d="M24 45 Q22 24 50 23 Q78 24 76 45 Q76 32 50 29 Q24 32 24 45 Z" fill="#20160c"/>`,
+      front: `<g fill="#5a4632" opacity="0.4"><circle cx="36" cy="74" r="1"/><circle cx="40" cy="77" r="1"/><circle cx="45" cy="79" r="1"/><circle cx="55" cy="79" r="1"/><circle cx="60" cy="77" r="1"/><circle cx="64" cy="74" r="1"/></g>`
+    },
+    { name:"Mounika", skin:"#F2C9A0",
+      back:  `<path d="M20 55 Q18 92 30 96 L30 60 Q20 55 20 55 Z" fill="#2b1a12"/><path d="M80 55 Q82 92 70 96 L70 60 Q80 55 80 55 Z" fill="#2b1a12"/><path d="M24 40 Q50 13 76 40 Q76 29 50 23 Q24 29 24 40 Z" fill="#2b1a12"/>`,
+      front: `<line x1="50" y1="23" x2="50" y2="37" stroke="#1a1009" stroke-width="1.5"/><rect x="44" y="29" width="10" height="3" rx="1.5" fill="#e07a9b"/>`
+    },
+    { name:"Thanusree", skin:"#C88B5A",
+      back:  `<path d="M22 50 Q15 80 28 92 Q30 68 26 55 Z" fill="#4a2f1d"/><path d="M78 50 Q85 80 72 92 Q70 68 74 55 Z" fill="#4a2f1d"/><path d="M24 42 Q45 15 76 40 Q74 27 50 23 Q28 27 24 42 Z" fill="#4a2f1d"/>`,
+      front: `<circle cx="66" cy="29" r="4" fill="#e8598a"/><circle cx="70" cy="26" r="3" fill="#ffcf56"/>`
+    }
+  ];
+
+  function avatarSVG(p){
+    return `${p.back}${faceCore(p.skin)}${p.front}`;
+  }
+
+  function avatarHTML(p, mini){
+    return `
+      <div class="avatar-block">
+        <div class="avatar ${mini ? 'avatar-mini':''}">
+          <svg viewBox="0 0 100 100">${avatarSVG(p)}</svg>
+        </div>
+        <div class="avatar-name">${p.name}</div>
+      </div>`;
+  }
+
+  function fillRow(elId, names, mini){
+    const el = document.getElementById(elId);
+    if(!el) return;
+    el.innerHTML = names.map(n => avatarHTML(people.find(p=>p.name===n), mini)).join('');
+  }
+
+  fillRow('introAvatars', people.map(p=>p.name), true);
+  fillRow('s1-avatars', ["Nishant","Nikhil"]);
+  fillRow('s2-avatars', ["Kamal","Vishnu"]);
+  fillRow('s3-avatars', ["Guhan","Meshwin"]);
+  fillRow('s4-avatars', ["Shivansh","Mounika"]);
+  fillRow('s5-avatars', ["Thanusree"]);
+  fillRow('finalGrid', people.map(p=>p.name), false);
+
+  (function fillDanceRow(){
+    const el = document.getElementById('danceAvatars');
+    const names = people.map(p=>p.name);
+    el.innerHTML = names.map((n,i) =>
+      avatarHTML(people.find(p=>p.name===n), true) +
+      (i < names.length-1 ? '<span class="hand-link">🤝</span>' : '')
+    ).join('');
+  })();
+
+  let current = 0;
+  const total = 8;
+  function updateDots(){
+    const d = document.getElementById('dots');
+    d.innerHTML = '';
+    for(let i=0;i<total;i++){
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i===current ? ' active':'');
+      d.appendChild(dot);
+    }
+  }
+  function goTo(n){
+    document.getElementById('scene-'+current).classList.remove('active');
+    current = n;
+    document.getElementById('scene-'+current).classList.add('active');
+    updateDots();
+  }
+  updateDots();
+</script>
+
+</body>
+</html>

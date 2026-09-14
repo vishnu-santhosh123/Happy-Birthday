@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Icebreaker Questions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg: #1F2340;
+    --card: #FFFFFF;
+    --ink: #1F2340;
+    --muted: #8A8FB3;
+    --accent: #FF6B6B;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    font-family:'Inter', sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 15% 20%, rgba(255,255,255,0.06), transparent 40%),
+                       radial-gradient(circle at 85% 80%, rgba(255,255,255,0.05), transparent 45%);
+  }
+
+  .stage{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding: 28px 18px;
+  }
+
+  .heading{
+    text-align:center;
+    margin-bottom: 22px;
+  }
+  .heading h1{
+    font-family:'Fredoka', sans-serif;
+    color: white;
+    font-size: clamp(1.5rem, 5vw, 2.1rem);
+    margin: 0 0 4px;
+  }
+  .heading p{
+    color: rgba(255,255,255,0.55);
+    margin:0;
+    font-size: 0.95rem;
+  }
+
+  .card{
+    background: var(--card);
+    width: 100%;
+    max-width: 480px;
+    min-height: 260px;
+    border-radius: 22px;
+    padding: 36px 30px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    position:relative;
+  }
+
+  .tag{
+    font-family:'Fredoka', sans-serif;
+    font-size: 0.78rem;
+    font-weight:600;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--accent);
+    color:white;
+    margin-bottom: 18px;
+    letter-spacing:0.02em;
+  }
+
+  .question{
+    font-family:'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: clamp(1.25rem, 4.4vw, 1.65rem);
+    color: var(--ink);
+    line-height: 1.35;
+  }
+
+  .controls{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    margin-top: 26px;
+  }
+
+  .btn{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size: 1rem;
+    border:none;
+    cursor:pointer;
+    padding: 12px 22px;
+    border-radius: 14px;
+    background: white;
+    color: var(--ink);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    transition: transform .1s ease;
+  }
+  .btn:active{ transform: scale(0.96); }
+  .btn.primary{ background: var(--accent); color:white; }
+  .btn.icon{ padding: 12px 16px; }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  .counter{
+    color: rgba(255,255,255,0.65);
+    font-size: 0.9rem;
+    margin-top: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .progress-track{
+    width: 100%;
+    max-width: 480px;
+    height: 5px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    margin-top: 6px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background: var(--accent);
+    border-radius: 999px;
+    transition: width .3s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="heading">
+    <h1>Team Icebreakers 🎉</h1>
+    <p>Tap next for a new question</p>
+  </div>
+
+  <div class="card">
+    <div class="tag" id="tag">Comedy</div>
+    <div class="question" id="question">Loading...</div>
+  </div>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="counter" id="counter"></div>
+
+  <div class="controls">
+    <button class="btn icon" id="prevBtn" onclick="prev()">←</button>
+    <button class="btn icon" onclick="shuffle()">🔀 Shuffle</button>
+    <button class="btn primary" id="nextBtn" onclick="next()">Next →</button>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    "What's the most useless talent you have?",
+    "If our team had a mascot, what would it be and why?",
+    "What's your most controversial food opinion?",
+    "If you had to survive a zombie apocalypse with three coworkers, who would you pick?",
+    "What's the weirdest job you've ever had?",
+    "If you could instantly master one useless skill, what would it be?",
+    "What's your go-to karaoke song, even if you'd never actually sing it?",
+    "What's the last thing you Googled that had nothing to do with work?",
+    "If our team were a sitcom, what would it be called?",
+    "What's a childhood dream job you never pursued?",
+    "What's the most embarrassing autocorrect fail you've had?",
+    "If you were a kitchen appliance, which one would you be?",
+    "What's a conspiracy theory you secretly find a little convincing?",
+    "What's your comfort TV show that you've rewatched way too many times?",
+    "If you had to eat one meal for the rest of your life, what would it be?",
+    "What's the worst haircut you've ever had?",
+    "What's a \"hill you'll die on\" that's completely trivial?",
+    "If you won the lottery tomorrow, what's the first ridiculous thing you'd buy?",
+    "What's your most-used emoji?",
+    "What's a movie everyone loves that you secretly can't stand?",
+    "If you had a personal theme song that played when you entered a room, what would it be?",
+    "What's the strangest thing in your fridge right now?",
+    "What's your go-to excuse for being late (even if it's never actually true)?",
+    "If animals could talk, which one would be the rudest?",
+    "What's a food combo you love that others find disgusting?",
+    "What superhero power would be most annoying to actually have?",
+    "What's your unpopular opinion about pineapple on pizza?",
+    "If you had to be trapped in an elevator with one celebrity, who would it be?",
+    "What's the last meme that actually made you laugh out loud?",
+    "What's your most irrational fear?",
+    "If you had to change your name to a fruit, which one would you choose?",
+    "What's a trend from your childhood you wish would come back?",
+    "If you could only communicate in gifs for a day, could you survive it?",
+    "What's the most chaotic thing you've seen at a wedding?",
+    "What's your \"hot take\" on how to eat a sandwich correctly?",
+    "If you were a Wi-Fi password, what would you be?",
+    "What's a smell that instantly takes you back to your childhood?",
+    "What's the most useless app on your phone that you refuse to delete?",
+    "If you had to describe your personality using only three emojis, which would you pick?",
+    "What's your go-to dance move at a party, even if it's bad?"
+  ];
+
+  let index = 0;
+
+  function render(){
+    document.getElementById('question').textContent = questions[index];
+    document.getElementById('counter').textContent = (index+1) + ' / ' + questions.length;
+    document.getElementById('progressFill').style.width = ((index+1)/questions.length*100) + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').textContent = (index === questions.length-1) ? 'Restart ↺' : 'Next →';
+  }
+
+  function next(){
+    if(index === questions.length-1){ index = 0; }
+    else { index++; }
+    render();
+  }
+
+  function prev(){
+    if(index > 0){ index--; render(); }
+  }
+
+  function shuffle(){
+    index = Math.floor(Math.random() * questions.length);
+    render();
+  }
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'ArrowRight') next();
+    if(e.key === 'ArrowLeft') prev();
+  });
+
+  render();
+</script>
+
+</body>
+</html>

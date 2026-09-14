@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday! 🎉</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap');
+
+  :root{
+    --pink: #FF8FB3;
+    --pink-deep: #E8598A;
+    --blush: #FFE3EC;
+    --yellow: #FFCF56;
+    --sky: #9BE0F5;
+    --mint: #B9F0D6;
+    --plum: #5B2A4D;
+    --cream: #FFF6F2;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--cream);
+    font-family:'Nunito', sans-serif;
+    color: var(--plum);
+    overflow-x:hidden;
+  }
+
+  .stage{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+  }
+
+  .screen{
+    display:none;
+    width:100%;
+    max-width:520px;
+    text-align:center;
+    animation: fadeUp .6s ease both;
+  }
+  .screen.active{ display:block; }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform: translateY(18px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  h1,h2{
+    font-family:'Baloo 2', cursive;
+    margin:0 0 12px;
+    line-height:1.15;
+  }
+
+  h1{ font-size: clamp(2rem, 7vw, 3rem); color: var(--pink-deep); }
+  h2{ font-size: clamp(1.5rem, 6vw, 2.2rem); }
+
+  p.lead{
+    font-size: 1.15rem;
+    line-height:1.6;
+    margin: 0 0 28px;
+  }
+
+  .btn{
+    font-family:'Baloo 2', cursive;
+    font-size: 1.1rem;
+    border:none;
+    cursor:pointer;
+    padding: 14px 32px;
+    border-radius: 999px;
+    background: var(--pink);
+    color: white;
+    box-shadow: 0 6px 0 var(--pink-deep);
+    transition: transform .12s ease;
+  }
+  .btn:active{
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--pink-deep);
+  }
+  .btn.secondary{
+    background: var(--sky);
+    box-shadow: 0 6px 0 #4FA9CB;
+  }
+  .btn.secondary:active{ box-shadow: 0 2px 0 #4FA9CB; }
+
+  /* --- gift box screen --- */
+  .gift-wrap{ margin: 0 auto 28px; width: 160px; cursor:pointer; }
+  .gift-wrap svg{ width:100%; display:block; }
+  .gift-wrap.opened .lid{
+    animation: lidPop .5s ease forwards;
+  }
+  @keyframes lidPop{
+    to{ transform: translate(0,-46px) rotate(-8deg); opacity: 0; }
+  }
+  .bounce{ animation: bob 2.2s ease-in-out infinite; }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-8px); }
+  }
+
+  /* --- balloons screen --- */
+  .balloon-row{
+    display:flex;
+    justify-content:center;
+    gap: 14px;
+    margin: 0 auto 10px;
+    height: 210px;
+    align-items:flex-end;
+  }
+  .balloon{
+    width: 58px;
+    animation: float 3.4s ease-in-out infinite;
+  }
+  .balloon:nth-child(2){ animation-delay: .3s; width: 70px; }
+  .balloon:nth-child(3){ animation-delay: .6s; }
+  .balloon:nth-child(4){ animation-delay: .15s; width: 50px; }
+  @keyframes float{
+    0%,100%{ transform: translateY(0) rotate(-2deg); }
+    50%{ transform: translateY(-14px) rotate(2deg); }
+  }
+
+  .wish-card{
+    background: white;
+    border-radius: 20px;
+    padding: 22px 26px;
+    margin: 18px 0;
+    box-shadow: 0 10px 24px rgba(91,42,77,0.08);
+    font-size: 1.1rem;
+    line-height:1.6;
+    text-align:left;
+    opacity:0;
+    transform: translateY(10px);
+  }
+  .wish-card.show{
+    animation: cardIn .5s ease forwards;
+  }
+  @keyframes cardIn{
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* --- cake screen --- */
+  .cake-wrap{ width: 190px; margin: 0 auto 18px; }
+  .cake-wrap svg{ width:100%; display:block; }
+  .flame{ animation: flicker 1.4s ease-in-out infinite; transform-origin: center bottom; }
+  @keyframes flicker{
+    0%,100%{ transform: scaleY(1) scaleX(1); }
+    50%{ transform: scaleY(1.15) scaleX(.9); }
+  }
+
+  /* --- final screen --- */
+  #canvas-confetti{
+    position:fixed; inset:0; pointer-events:none; z-index:5;
+  }
+  .final-name{ color: var(--pink-deep); }
+
+  .dots{
+    display:flex; gap:8px; justify-content:center; margin-top: 22px;
+  }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#F2CBDA; }
+  .dot.active{ background: var(--pink-deep); }
+
+  footer.sig{
+    margin-top: 30px;
+    font-family:'Baloo 2', cursive;
+    color: #C98BA6;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="canvas-confetti"></canvas>
+
+<div class="stage">
+
+  <!-- SCREEN 1: Gift box intro -->
+  <section class="screen active" id="screen-0">
+    <h1>A little something for you 🎁</h1>
+    <p class="lead">Someone made you a tiny birthday surprise.<br>Tap the box to open it.</p>
+    <div class="gift-wrap bounce" id="giftBox" onclick="openGift()">
+      <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="70" width="140" height="100" rx="10" fill="#FF8FB3"/>
+        <rect x="30" y="70" width="140" height="26" fill="#E8598A"/>
+        <rect x="88" y="70" width="24" height="100" fill="#FFCF56"/>
+        <g class="lid">
+          <rect x="18" y="46" width="164" height="30" rx="10" fill="#E8598A"/>
+          <rect x="88" y="10" width="24" height="60" fill="#FFCF56"/>
+          <path d="M100 44 C70 10, 30 20, 55 46 C70 56, 90 50, 100 44Z" fill="#FFCF56"/>
+          <path d="M100 44 C130 10, 170 20, 145 46 C130 56, 110 50, 100 44Z" fill="#FFCF56"/>
+        </g>
+      </svg>
+    </div>
+    <div id="giftHint" style="font-size:.95rem; color:#B87A9A;">tap ✨</div>
+  </section>
+
+  <!-- SCREEN 2: Balloons / opening line -->
+  <section class="screen" id="screen-1">
+    <div class="balloon-row">
+      <svg class="balloon" viewBox="0 0 60 90"><ellipse cx="30" cy="30" rx="28" ry="30" fill="#FF8FB3"/><line x1="30" y1="60" x2="30" y2="88" stroke="#E8598A" stroke-width="2"/></svg>
+      <svg class="balloon" viewBox="0 0 60 90"><ellipse cx="30" cy="30" rx="28" ry="30" fill="#FFCF56"/><line x1="30" y1="60" x2="30" y2="88" stroke="#E0AC2E" stroke-width="2"/></svg>
+      <svg class="balloon" viewBox="0 0 60 90"><ellipse cx="30" cy="30" rx="28" ry="30" fill="#9BE0F5"/><line x1="30" y1="60" x2="30" y2="88" stroke="#4FA9CB" stroke-width="2"/></svg>
+      <svg class="balloon" viewBox="0 0 60 90"><ellipse cx="30" cy="30" rx="28" ry="30" fill="#B9F0D6"/><line x1="30" y1="60" x2="30" y2="88" stroke="#6FCB9B" stroke-width="2"/></svg>
+    </div>
+    <h2>Happy Birthday!! 🎈</h2>
+    <p class="lead">Before the cake, a few things you should know...</p>
+    <button class="btn" onclick="goTo(2)">Tell me</button>
+  </section>
+
+  <!-- SCREEN 3: Wishes, revealed one at a time -->
+  <section class="screen" id="screen-2">
+    <h2>Some true things about you</h2>
+    <div id="wishList"></div>
+    <button class="btn secondary" id="wishBtn" onclick="nextWish()">Next</button>
+  </section>
+
+  <!-- SCREEN 4: Cake -->
+  <section class="screen" id="screen-3">
+    <h2>Make a wish</h2>
+    <p class="lead">Tap the candle when you're ready.</p>
+    <div class="cake-wrap" id="cakeBox" onclick="blowCandle()">
+      <svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="100" width="140" height="45" rx="8" fill="#FFDCE8"/>
+        <rect x="30" y="100" width="140" height="12" fill="#FF8FB3"/>
+        <rect x="45" y="65" width="110" height="40" rx="8" fill="#FFF1F6"/>
+        <rect x="45" y="65" width="110" height="10" fill="#FFCF56"/>
+        <rect x="97" y="35" width="6" height="32" fill="#F6C6D6"/>
+        <g id="flameGroup">
+          <path class="flame" d="M100 35 C93 25, 93 15, 100 6 C107 15, 107 25, 100 35Z" fill="#FFA23C"/>
+        </g>
+      </svg>
+    </div>
+    <div id="cakeHint" style="font-size:.95rem; color:#B87A9A;">tap the flame 🕯️</div>
+  </section>
+
+  <!-- SCREEN 5: Final message -->
+  <section class="screen" id="screen-4">
+    <h2>Happy Birthday, <span class="final-name" id="nameSlot">friend</span>! 🎂</h2>
+    <p class="lead" id="finalMessage">
+      Hope today is as wonderful as you are — full of good food,
+      easy laughs, and people who love you. Here's to another year
+      of you being exactly you. 💛
+    </p>
+    <footer class="sig">— made with love, for your special day</footer>
+  </section>
+
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+  const wishes = [
+    "You make ordinary days feel a little more fun.",
+    "You're the friend people text first with good news.",
+    "You've got better taste in snacks than anyone I know.",
+    "This next year is going to be a really good one for you."
+  ];
+  let wishIndex = 0;
+  let currentScreen = 0;
+  const totalScreens = 5;
+
+  function updateDots(){
+    const dotsEl = document.getElementById('dots');
+    dotsEl.innerHTML = '';
+    for(let i=0;i<totalScreens;i++){
+      const d = document.createElement('div');
+      d.className = 'dot' + (i===currentScreen ? ' active' : '');
+      dotsEl.appendChild(d);
+    }
+  }
+
+  function goTo(n){
+    document.getElementById('screen-'+currentScreen).classList.remove('active');
+    currentScreen = n;
+    document.getElementById('screen-'+currentScreen).classList.add('active');
+    updateDots();
+    if(n === 4){ launchConfetti(); }
+  }
+
+  function openGift(){
+    const box = document.getElementById('giftBox');
+    box.classList.remove('bounce');
+    box.classList.add('opened');
+    document.getElementById('giftHint').style.visibility = 'hidden';
+    setTimeout(()=> goTo(1), 550);
+  }
+
+  function nextWish(){
+    const list = document.getElementById('wishList');
+    if(wishIndex < wishes.length){
+      const card = document.createElement('div');
+      card.className = 'wish-card';
+      card.textContent = wishes[wishIndex];
+      list.appendChild(card);
+      requestAnimationFrame(()=> card.classList.add('show'));
+      wishIndex++;
+      if(wishIndex === wishes.length){
+        document.getElementById('wishBtn').textContent = 'On to the cake 🎂';
+      }
+    } else {
+      goTo(3);
+    }
+  }
+
+  function blowCandle(){
+    document.getElementById('flameGroup').style.transition = 'opacity .3s';
+    document.getElementById('flameGroup').style.opacity = '0';
+    document.getElementById('cakeHint').style.visibility = 'hidden';
+    setTimeout(()=> goTo(4), 500);
+  }
+
+  updateDots();
+
+  /* ---- confetti ---- */
+  const canvas = document.getElementById('canvas-confetti');
+  const ctx = canvas.getContext('2d');
+  let confetti = [];
+  const colors = ['#FF8FB3','#FFCF56','#9BE0F5','#B9F0D6','#E8598A'];
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function launchConfetti(){
+    confetti = [];
+    for(let i=0;i<140;i++){
+      confetti.push({
+        x: Math.random()*canvas.width,
+        y: -20 - Math.random()*canvas.height*0.5,
+        r: 4 + Math.random()*5,
+        c: colors[Math.floor(Math.random()*colors.length)],
+        vy: 2 + Math.random()*3,
+        vx: -1.5 + Math.random()*3,
+        rot: Math.random()*360,
+        vr: -6 + Math.random()*12
+      });
+    }
+    let frames = 0;
+    function frame(){
+      ctx.clearRect(0,0,canvas.width, canvas.height);
+      confetti.forEach(p=>{
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot * Math.PI/180);
+        ctx.fillStyle = p.c;
+        ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r*1.6);
+        ctx.restore();
+      });
+      frames++;
+      if(frames < 260){
+        requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+      }
+    }
+    frame();
+  }
+</script>
+
+</body>
+</html>
